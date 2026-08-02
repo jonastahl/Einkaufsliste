@@ -22,7 +22,7 @@
         android:background="@color/background">
         <!--android:background="#FAFAFA" -->
         <ImageView
-            android:id="@id/drag_handle"
+            android:id="@+id/drag_handle"
             android:layout_width="60dp"
             android:layout_height="0dp"
             android:paddingLeft="40dp"
@@ -34,7 +34,7 @@
             app:srcCompat="@drawable/drag_handle" />
 
         <TextView
-            android:id="@id/text"
+            android:id="@+id/text"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"

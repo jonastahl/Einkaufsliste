@@ -47,24 +47,24 @@ public class fragment_list extends Fragment {
 
         toolbar = view.findViewById(R.id.toolbar_list);
         toolbar.setOnMenuItemClickListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.add_group:
-                    addGroup();
-                    return true;
-                case R.id.delete_completed:
-                    deleteCompleted();
-                    return true;
-                case R.id.settings_list:
-                    Navigation.findNavController(getView())
-                            .navigate(R.id.action_fragment_list_to_fragment_list_settings);
-                    return true;
-                case R.id.change_list:
-                    Navigation.findNavController(getView())
-                            .navigate(R.id.action_fragment_list_to_fragment_all_lists);
-                    return true;
-                case R.id.clear_list:
-                    liste.clearList();
-                    return true;
+            int itemId = item.getItemId();
+            if (itemId == R.id.add_group) {
+                addGroup();
+                return true;
+            } else if (itemId == R.id.delete_completed) {
+                deleteCompleted();
+                return true;
+            } else if (itemId == R.id.settings_list) {
+                Navigation.findNavController(getView())
+                        .navigate(R.id.action_fragment_list_to_fragment_list_settings);
+                return true;
+            } else if (itemId == R.id.change_list) {
+                Navigation.findNavController(getView())
+                        .navigate(R.id.action_fragment_list_to_fragment_all_lists);
+                return true;
+            } else if (itemId == R.id.clear_list) {
+                liste.clearList();
+                return true;
             }
             return false;
         });
