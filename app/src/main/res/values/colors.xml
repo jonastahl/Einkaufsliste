@@ -1,18 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimaryDark">#0502AD</color>
-    <color name="colorPrimary">#312FFA</color>
+    <!-- Material 3 Primary -->
+    <color name="primary">#005AC1</color>
+    <color name="onPrimary">#FFFFFF</color>
+    <color name="primaryContainer">#D8E2FF</color>
+    <color name="onPrimaryContainer">#001A41</color>
 
-    <color name="background">#F0F0F0</color>
-    <color name="colorYes">#4CAF50</color>
-    <color name="colorNo">#FF0000</color>
-    <color name="colorNeutral">#00BED6</color>
+    <!-- Material 3 Secondary -->
+    <color name="secondary">#535F70</color>
+    <color name="onSecondary">#FFFFFF</color>
+    <color name="secondaryContainer">#D7E3F7</color>
+    <color name="onSecondaryContainer">#101C2B</color>
 
-    <color name="notCancelledGroup">#BDBDBD</color>
+    <!-- Material 3 Tertiary -->
+    <color name="tertiary">#6B5778</color>
+    <color name="onTertiary">#FFFFFF</color>
+    <color name="tertiaryContainer">#F2DAFF</color>
+    <color name="onTertiaryContainer">#251431</color>
+
+    <!-- Material 3 Error -->
+    <color name="error">#BA1A1A</color>
+    <color name="onError">#FFFFFF</color>
+    <color name="errorContainer">#FFDAD6</color>
+    <color name="onErrorContainer">#410002</color>
+
+    <!-- Material 3 Neutral -->
+    <color name="background">#E8EAED</color>
+    <color name="onBackground">#1A1C1E</color>
+    <color name="surface">#E8EAED</color>
+    <color name="onSurface">#1A1C1E</color>
+    <color name="surfaceVariant">#DDE1E9</color>
+    <color name="onSurfaceVariant">#44474E</color>
+    <color name="outline">#74777F</color>
+
+    <!-- Functional colors -->
+    <color name="colorYes">#2E6C00</color>
+    <color name="colorNo">#BA1A1A</color>
+    <color name="colorNeutral">#006874</color>
+
+    <color name="notCancelledGroup">#FFFFFF</color>
     <color name="cancelledGroup">@color/background</color>
 
-    <color name="notCancelledItem">#DFDFDF</color>
+    <color name="notCancelledItem">#FFFFFF</color>
     <color name="cancelledItem">@color/background</color>
 
-    <color name="textColorSec">#000000</color>
+    <color name="textColorSec">#44474E</color>
+
+    <!-- Legacy compatibility -->
+    <color name="colorPrimary">@color/primary</color>
+    <color name="colorPrimaryDark">#004494</color>
 </resources>

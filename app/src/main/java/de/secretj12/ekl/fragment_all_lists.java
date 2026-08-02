@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -55,7 +54,7 @@ public class fragment_all_lists extends Fragment {
         list.setAdapter(messageAdapter);
 
 
-        Button create_list = view.findViewById(R.id.create_list);
+        View create_list = view.findViewById(R.id.fab_create_list);
         create_list.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -93,7 +92,7 @@ public class fragment_all_lists extends Fragment {
             }
         });
 
-        Button add_list = view.findViewById(R.id.add_list);
+        View add_list = view.findViewById(R.id.fab_add_list);
         add_list.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

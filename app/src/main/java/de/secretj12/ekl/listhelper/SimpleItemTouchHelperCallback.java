@@ -1,6 +1,7 @@
 package de.secretj12.ekl.listhelper;
 
 import android.graphics.Canvas;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,9 +20,13 @@ public class SimpleItemTouchHelperCallback
 
     @Override
     public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
-        return makeMovementFlags(ItemTouchHelper.UP | ItemTouchHelper.DOWN,
-                (((ItemViewHolder) viewHolder).isEnableAble() ? ItemTouchHelper.LEFT : 0)
-                        | (((ItemViewHolder) viewHolder).isCancelAble() ? ItemTouchHelper.RIGHT : 0));
+        ItemViewHolder vh = (ItemViewHolder) viewHolder;
+        int swipeFlags = 0;
+        // User wants: Swipe RIGHT to CANCEL (turn gray), Swipe LEFT to ENABLE (restore)
+        if (vh.isCancelAble()) swipeFlags |= ItemTouchHelper.RIGHT;
+        if (vh.isEnableAble()) swipeFlags |= ItemTouchHelper.LEFT;
+        
+        return makeMovementFlags(ItemTouchHelper.UP | ItemTouchHelper.DOWN, swipeFlags);
     }
 
     @Override
@@ -43,23 +48,21 @@ public class SimpleItemTouchHelperCallback
 
     @Override
     public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+        ItemViewHolder vh = (ItemViewHolder) viewHolder;
+        vh.setSwiped();
+        
         if (direction == ItemTouchHelper.RIGHT) {
-            adapter.onItemCancel(viewHolder.getAdapterPosition(), (ItemViewHolder) viewHolder);
-            ((ItemViewHolder) viewHolder).setSwiped();
-            viewHolder.itemView.findViewById(R.id.swipeContent).animate().translationX(0)
-                    .withEndAction(() -> {
-                        adapter.onItemUpdated(viewHolder.getAdapterPosition(), (ItemViewHolder) viewHolder);
-                        viewHolder.itemView.findViewById(R.id.swipeContent).setTranslationX(0);
-                    }).start();
+            adapter.onItemCancel(vh.getAdapterPosition(), vh);
         } else {
-            adapter.onItemEnable(viewHolder.getAdapterPosition(), (ItemViewHolder) viewHolder);
-            ((ItemViewHolder) viewHolder).setSwiped();
-            viewHolder.itemView.findViewById(R.id.swipeContent).animate().translationX(0)
-                    .withEndAction(() -> {
-                        adapter.onItemUpdated(viewHolder.getAdapterPosition(), (ItemViewHolder) viewHolder);
-                        viewHolder.itemView.findViewById(R.id.swipeContent).setTranslationX(0);
-                    }).start();
+            adapter.onItemEnable(vh.getAdapterPosition(), vh);
         }
+        
+        // Immediate reset to avoid visual artifacts
+        View swipeContent = vh.itemView.findViewById(R.id.swipeContent);
+        if (swipeContent != null) {
+            swipeContent.setTranslationX(0);
+        }
+        adapter.onItemUpdated(vh.getAdapterPosition(), vh);
     }
 
     @Override
@@ -79,40 +82,42 @@ public class SimpleItemTouchHelperCallback
         if (viewHolder instanceof ItemTouchHelperViewHolder) {
             ((ItemTouchHelperViewHolder) viewHolder).onItemClear();
         }
+        
+        View swipeContent = viewHolder.itemView.findViewById(R.id.swipeContent);
+        if (swipeContent != null) {
+            swipeContent.setTranslationX(0);
+        }
     }
 
     @Override
     public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
         if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
-            if (((ItemViewHolder) viewHolder).isSwiped())
-                return;
+            ItemViewHolder vh = (ItemViewHolder) viewHolder;
+            if (vh.isSwiped()) return;
 
-            if (dX < 0)
-                ((ItemViewHolder) viewHolder).onItemSwipeCancel();
-            else
-                ((ItemViewHolder) viewHolder).onItemSwipeEnable();
-
-            int width = viewHolder.itemView.getWidth();
+            // Swiping RIGHT (dX > 0) -> Mark as Done (Green requested)
+            // Swiping LEFT (dX < 0) -> Restore (Red requested)
             if (dX > 0) {
-                if (dX < width * 0.1)
-                    viewHolder.itemView.findViewById(R.id.swipeContent).setTranslationX(dX);
-                else
-                    viewHolder.itemView.findViewById(R.id.swipeContent).setTranslationX((float) (width * 0.1
-                            + slowSwipeFormula(width, dX)));
-            } else {
-                if (dX > -width * 0.1)
-                    viewHolder.itemView.findViewById(R.id.swipeContent).setTranslationX(dX);
-                else
-                    viewHolder.itemView.findViewById(R.id.swipeContent).setTranslationX((float) (-width * 0.1
-                            - slowSwipeFormula(width, -dX)));
+                vh.onItemSwipeCancel();
+            } else if (dX < 0) {
+                vh.onItemSwipeEnable();
+            }
+            vh.onSwipeProgress(dX);
+
+            View swipeContent = viewHolder.itemView.findViewById(R.id.swipeContent);
+            if (swipeContent != null) {
+                float width = (float) viewHolder.itemView.getWidth();
+                float translationX;
+                if (Math.abs(dX) < width * 0.3f) {
+                    translationX = dX;
+                } else {
+                    float extra = Math.abs(dX) - width * 0.3f;
+                    translationX = Math.signum(dX) * (width * 0.3f + extra * 0.4f);
+                }
+                swipeContent.setTranslationX(translationX);
             }
         } else {
             super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
         }
-    }
-
-    private float slowSwipeFormula(int width, float dX) {
-        return (float) ((dX - (width * 0.1))
-                * (1 / Math.pow((1f / 2 * ((dX - (width * 0.1)) / (width * 0.9) * 5) + 1), 2)));
     }
 }

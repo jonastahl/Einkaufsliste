@@ -34,6 +34,8 @@ class ItemViewHolder extends RecyclerView.ViewHolder
     private final ImageButton add_item;
     private final LinearLayout background;
     private final View swipe_content;
+    private final ImageView swipeIconLeft;
+    private final ImageView swipeIconRight;
     private final int position;
     private ListItem item;
     private boolean swiped;
@@ -48,6 +50,8 @@ class ItemViewHolder extends RecyclerView.ViewHolder
         add_item = itemView.findViewById(R.id.add_item);
         background = itemView.findViewById(R.id.background);
         swipe_content = itemView.findViewById(R.id.swipeContent);
+        swipeIconLeft = itemView.findViewById(R.id.swipe_icon_left);
+        swipeIconRight = itemView.findViewById(R.id.swipe_icon_right);
         position = -1;
         swiped = false;
 
@@ -59,7 +63,7 @@ class ItemViewHolder extends RecyclerView.ViewHolder
         if (this.item != null)
             this.item.resetItemListener(listenerID);
 
-        itemView.findViewById(R.id.swipeContent).setTranslationX(0);
+        resetSwipeUI();
         this.item = item;
         swiped = false;
 
@@ -81,20 +85,19 @@ class ItemViewHolder extends RecyclerView.ViewHolder
                     itemView.setTransitionAlpha(1f);
 
                 ItemViewHolder.this.cancelled = cancelled;
+                com.google.android.material.card.MaterialCardView card = (com.google.android.material.card.MaterialCardView) itemView;
+                int color;
                 if (cancelled) {
-                    if (item instanceof Group)
-                        swipe_content.setBackgroundColor(swipe_content.getResources().getColor(R.color.cancelledGroup));
-                    else
-                        swipe_content.setBackgroundColor(swipe_content.getResources().getColor(R.color.cancelledItem));
-                    textView.setTextAlignment(TextView.TEXT_ALIGNMENT_TEXT_END);
+                    color = card.getResources().getColor(item instanceof Group ? R.color.cancelledGroup : R.color.cancelledItem);
+                    textView.setGravity(android.view.Gravity.CENTER_VERTICAL | android.view.Gravity.END);
+                    swipe_content.setAlpha(0.6f);
                 } else {
-                    if (item instanceof Group)
-                        swipe_content.setBackgroundColor(swipe_content.getResources().getColor(R.color.notCancelledGroup));
-                    else
-                        swipe_content.setBackgroundColor(swipe_content.getResources().getColor(R.color.notCancelledItem));
-
-                    textView.setTextAlignment(TextView.TEXT_ALIGNMENT_TEXT_START);
+                    color = card.getResources().getColor(item instanceof Group ? R.color.notCancelledGroup : R.color.notCancelledItem);
+                    textView.setGravity(android.view.Gravity.CENTER_VERTICAL | android.view.Gravity.START);
+                    swipe_content.setAlpha(1.0f);
                 }
+                card.setCardBackgroundColor(color);
+                swipe_content.setBackgroundColor(color);
             }
         });
 
@@ -168,34 +171,87 @@ class ItemViewHolder extends RecyclerView.ViewHolder
         return item.isCancelAble();
     }
 
+    private void resetSwipeUI() {
+        swipe_content.setTranslationX(0);
+        background.setBackgroundColor(Color.TRANSPARENT);
+        if (swipeIconLeft != null) {
+            swipeIconLeft.setVisibility(View.INVISIBLE);
+            swipeIconLeft.setAlpha(0f);
+        }
+        if (swipeIconRight != null) {
+            swipeIconRight.setVisibility(View.INVISIBLE);
+            swipeIconRight.setAlpha(0f);
+        }
+        swipe_content.setAlpha(cancelled ? 0.6f : 1.0f);
+    }
+
     @Override
     public void onItemSelected() {
+        com.google.android.material.card.MaterialCardView card = (com.google.android.material.card.MaterialCardView) itemView;
+        card.setCardBackgroundColor(Color.LTGRAY);
         swipe_content.setBackgroundColor(Color.LTGRAY);
     }
 
     @Override
     public void onItemClear() {
+        resetSwipeUI();
+        
+        com.google.android.material.card.MaterialCardView card = (com.google.android.material.card.MaterialCardView) itemView;
+        int color;
         if (cancelled) {
-            if (item instanceof Group)
-                swipe_content.setBackgroundColor(swipe_content.getResources().getColor(R.color.cancelledGroup));
-            else
-                swipe_content.setBackgroundColor(swipe_content.getResources().getColor(R.color.cancelledItem));
+            color = card.getResources().getColor(item instanceof Group ? R.color.cancelledGroup : R.color.cancelledItem);
+            swipe_content.setAlpha(0.6f);
         } else {
-            if (item instanceof Group)
-                swipe_content.setBackgroundColor(swipe_content.getResources().getColor(R.color.notCancelledGroup));
-            else
-                swipe_content.setBackgroundColor(swipe_content.getResources().getColor(R.color.notCancelledItem));
+            color = card.getResources().getColor(item instanceof Group ? R.color.notCancelledGroup : R.color.notCancelledItem);
+            swipe_content.setAlpha(1.0f);
         }
+        card.setCardBackgroundColor(color);
+        swipe_content.setBackgroundColor(color);
     }
 
     @Override
     public void onItemSwipeCancel() {
-        background.setBackgroundColor(swipe_content.getResources().getColor(R.color.colorNo, swipe_content.getContext().getTheme()));
+        background.setBackgroundColor(swipe_content.getResources().getColor(R.color.colorYes, swipe_content.getContext().getTheme()));
+        if (swipeIconLeft != null) {
+            swipeIconLeft.setVisibility(View.VISIBLE);
+            swipeIconLeft.setAlpha(1.0f);
+        }
+        if (swipeIconRight != null) swipeIconRight.setVisibility(View.INVISIBLE);
     }
 
     @Override
     public void onItemSwipeEnable() {
-        background.setBackgroundColor(swipe_content.getResources().getColor(R.color.colorYes, swipe_content.getContext().getTheme()));
+        background.setBackgroundColor(swipe_content.getResources().getColor(R.color.colorNo, swipe_content.getContext().getTheme()));
+        if (swipeIconRight != null) {
+            swipeIconRight.setVisibility(View.VISIBLE);
+            swipeIconRight.setAlpha(1.0f);
+        }
+        if (swipeIconLeft != null) swipeIconLeft.setVisibility(View.INVISIBLE);
+    }
+
+    public void onSwipeProgress(float dX) {
+        float width = (float) itemView.getWidth();
+        float progress = Math.min(Math.abs(dX) / (width * 0.4f), 1.0f);
+        
+        if (dX > 0) { // Swiping Right (to Mark as Done)
+            if (swipeIconLeft != null) {
+                swipeIconLeft.setVisibility(View.VISIBLE);
+                swipeIconLeft.setAlpha(progress);
+            }
+            if (swipeIconRight != null) swipeIconRight.setVisibility(View.INVISIBLE);
+            if (!cancelled) {
+                swipe_content.setAlpha(1.0f - (progress * 0.4f));
+            }
+        } else if (dX < 0) { // Swiping Left (to Restore)
+            if (swipeIconRight != null) {
+                swipeIconRight.setVisibility(View.VISIBLE);
+                swipeIconRight.setAlpha(progress);
+            }
+            if (swipeIconLeft != null) swipeIconLeft.setVisibility(View.INVISIBLE);
+            if (cancelled) {
+                swipe_content.setAlpha(0.6f + (progress * 0.4f));
+            }
+        }
     }
 
     void setSwiped() {
